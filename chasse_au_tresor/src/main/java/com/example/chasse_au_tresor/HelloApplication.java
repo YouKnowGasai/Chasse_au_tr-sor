@@ -15,25 +15,17 @@ import java.util.*;
 
 public class HelloApplication extends Application {
 
-    Bonus listeBonus = new Bonus();
+    Evenements evenements = new Evenements();
 
-    Malus listeMalus = new Malus();
-
-    int indexBonus = 5;
-
-    int indexMalus = 9;
+    int indexEvenements = 11;
 
 
     @Override
     public void start(Stage primaryStage) {
 
-        listeBonus.GenererListeBonus();
-        listeMalus.GenererListeMalus();
+        evenements.GenererListeEvenements();
 
-        List<Malus> tableauEvent = tableauEvent();
-
-        System.out.println(listeBonus.listeBonus.get(1).libelle);
-        System.out.println(listeMalus.listeMalus.get(2).libelle);
+        List<Evenements> tableauEvent = CreerTableauEvent();
 
         // Création d'un GridPane
         GridPane gridPane = new GridPane();
@@ -43,7 +35,7 @@ public class HelloApplication extends Application {
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 10; col++) {
                 Label caseLabel = createCase("Case " + (row * 10 + col + 1));
-                caseLabel.setUserData(tableauEvent.get(row * 10 + col).libelle);
+                caseLabel.setUserData(tableauEvent.get(row * 10 + col).libelle + "@" + tableauEvent.get(row * 10 + col).type);
                 int finalRow = row;
                 int finalCol = col;
                 caseLabel.setOnMouseClicked(event -> handleCaseClick(caseLabel, finalRow, finalCol));
@@ -72,41 +64,51 @@ public class HelloApplication extends Application {
     }
 
     private void handleCaseClick(Label caseLabel, int row, int col) {
-        System.out.println("Case cliquée : " + (row * 10 + col + 1) + " " + caseLabel.getUserData());
-        caseLabel.setText(caseLabel.getUserData().toString());
+        System.out.println("Case cliquée : " + (row * 10 + col + 1) + " " + caseLabel.getUserData().toString().split("@")[0]);
+        switch (caseLabel.getUserData().toString().split("@")[1]) {
+            case "bonus", "victoire":
 
+                caseLabel.setStyle("-fx-background-color: lightgreen; -fx-border-color: black; -fx-padding: 5px;");
 
-        // Changer le fond de la case
-        caseLabel.setStyle("-fx-background-color: lightblue; -fx-border-color: black; -fx-padding: 5px;");
+                break;
+
+            case "malus", "défaite":
+
+                caseLabel.setStyle("-fx-background-color: #FF7F7F; -fx-border-color: black; -fx-padding: 5px;");
+
+                break;
+
+            case "vide" :
+
+                // Changer le fond de la case
+                caseLabel.setStyle("-fx-background-color: lightblue; -fx-border-color: black; -fx-padding: 5px;");
+
+        }
+
+        caseLabel.setText(caseLabel.getUserData().toString().split("@")[0]);
     }
 
 
-    public List<Malus> tableauEvent(){
+    public List<Evenements> CreerTableauEvent(){
 
-        List<Malus> listeEvent = new LinkedList<>();
+        List<Evenements> tableauEvent = new LinkedList<>();
 
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 10; col++) {
-                if (indexMalus == -1 ){
-                    listeEvent.add(listeMalus.listeMalus.get(10));
+                if (indexEvenements == -1 ){
+                    tableauEvent.add(evenements.listeEvenements.get(12));
                 }else {
 
-                    listeEvent.add(listeMalus.listeMalus.get(indexMalus));
+                    tableauEvent.add(evenements.listeEvenements.get(indexEvenements));
                     System.out.println();
-                    indexMalus--;
+                    indexEvenements--;
                 }
             }
         }
 
-        Collections.shuffle(listeEvent);
+        Collections.shuffle(tableauEvent);
 
-        for (int row = 0; row < 10; row++) {
-            for (int col = 0; col < 10; col++) {
-                System.out.println(listeEvent.get(row * 10 + col).libelle);
-            }
-        }
-
-        return listeEvent;
+        return tableauEvent;
     }
 
 
