@@ -1,6 +1,7 @@
 package com.example.chasse_au_tresor;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -28,6 +29,22 @@ public class HelloApplication extends Application {
     private static int playerId;
     private static boolean isMyTurn = false;
 
+    private static Label actionLabel = new Label("");
+
+    private static int playerScore = 0;
+    private static Label scoreLabel;
+
+    public static void main(String[] args) {
+        if (args.length > 0) {
+            playerId = Integer.parseInt(args[0]);
+        } else {
+            System.out.println("Veuillez fournir l'ID du joueur (1 ou 2) en tant qu'argument de programme.");
+            System.exit(1);
+        }
+
+        connectToServer();
+        launch(args);
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -38,6 +55,7 @@ public class HelloApplication extends Application {
             System.exit(1);
         }
         playerId = Integer.parseInt(getParameters().getRaw().get(0));
+        scoreLabel = new Label("Score: " + playerScore);
 
         evenements.GenererListeEvenements();
 
@@ -61,14 +79,19 @@ public class HelloApplication extends Application {
 
         isMyTurn = (playerId == 1);
 
+        if (isMyTurn){
+            actionLabel.setText("C'est votre tour (Joueur " + playerId + ")");
+        }else{
+            actionLabel.setText("En attente du tour du joueur...");
+        }
+
         // Création des étiquettes pour chaque joueur
         Label playerLabel = new Label("Joueur " + playerId);
-        Label actionLabel = new Label("Action du joueur : ");
 
         // Création de la mise en page finale
         VBox layout = new VBox(10);
         layout.setPadding(new Insets(10));
-        layout.getChildren().addAll(playerLabel, actionLabel, gridPane);
+        layout.getChildren().addAll(playerLabel, actionLabel, gridPane, scoreLabel);
 
         // Création de la scène
         Scene scene = new Scene(layout);
@@ -110,11 +133,24 @@ public class HelloApplication extends Application {
 
                     caseLabel.setStyle("-fx-background-color: lightgreen; -fx-border-color: black; -fx-padding: 5px;");
 
+                    if (Objects.equals(caseLabel.getUserData().toString().split("@")[1], "bonus")){
+                        playerScore += 500;
+                    }else{
+                        System.out.println(caseLabel.getUserData().toString().split("@")[1]);
+                        playerScore += 1000;
+                    }
+
                     break;
 
                 case "malus", "défaite":
 
                     caseLabel.setStyle("-fx-background-color: #FF7F7F; -fx-border-color: black; -fx-padding: 5px;");
+
+                    if (Objects.equals(caseLabel.getUserData().toString().split("@")[1], "malus")){
+                        playerScore -= 500;
+                    }else{
+                        playerScore -= 1000;
+                    }
 
                     break;
 
@@ -204,36 +240,23 @@ public class HelloApplication extends Application {
     private static void handlePlayerTurn(int playerTurn) {
         isMyTurn = (playerId == playerTurn);
         System.out.println("C'est le tour du joueur " + playerTurn);
+
+        Platform.runLater(() -> {
+            if (isMyTurn) {
+                actionLabel.setText("C'est votre tour (Joueur " + playerTurn + ")");
+                scoreLabel.setText("Score: " + playerScore);
+            } else {
+                actionLabel.setText("En attente du tour du joueur...");
+                scoreLabel.setText("Score: " + playerScore);
+            }
+        });
     }
 
     private static void handleCaseClickFromServer(String message) {
         // Logique pour traiter le message du serveur et mettre à jour l'interface graphique
         System.out.println("Message du serveur : " + message);
-        mettreAJourInterfaceGraphique(message);
     }
 
-    public static void mettreAJourInterfaceGraphique(String message) {
-        // Ajoutez ici la logique pour mettre à jour l'interface graphique en fonction du message
-        // ...
-    }
-
-
-    public static void main(String[] args) {
-        if (args.length > 0) {
-            playerId = Integer.parseInt(args[0]);
-        } else {
-            System.out.println("Veuillez fournir l'ID du joueur (1 ou 2) en tant qu'argument de programme.");
-            System.exit(1);
-        }
-
-        connectToServer();
-        launch(args);
-    }
-
-    private static void handleInitialInfo(String message) {
-        // Traiter les informations initiales reçues du serveur (par exemple, initialiser le plateau de jeu).
-        System.out.println("Informations initiales reçues : " + message);
-    }
 
 }
 
