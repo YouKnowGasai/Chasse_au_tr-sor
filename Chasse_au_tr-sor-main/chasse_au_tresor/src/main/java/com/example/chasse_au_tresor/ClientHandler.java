@@ -44,22 +44,6 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private static void switchPlayerTurn() {
-        // Changer le joueur actuel
-        currentPlayer = (currentPlayer == 1) ? 2 : 1;
-        System.out.println("Tour du joueur " + currentPlayer);
-        // Informer tous les clients du changement de tour
-        Serveur.broadcastMessage("Tour du joueur " + currentPlayer, null);
-    }
-
-    private void handleCaseClick(String message) {
-        // Gérer les actions spécifiques liées au clic de case ici
-
-        // Informer tous les clients du changement de tour
-        switchPlayerTurn();
-        Serveur.broadcastMessage("PlayerTurn " + Serveur.getCurrentPlayerTurn(), null);
-    }
-
     public void sendMessage(String message) {
         writer.println(message);
     }
