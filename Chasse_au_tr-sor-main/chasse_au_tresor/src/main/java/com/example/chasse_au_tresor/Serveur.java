@@ -16,7 +16,7 @@ public class Serveur {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server is running on port " + PORT);
 
-            while (true) {
+            while (!serverSocket.isClosed()) {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("New client connected: " + clientSocket);
 
@@ -29,7 +29,6 @@ public class Serveur {
             e.printStackTrace();
         }
     }
-
     public static void broadcastMessage(String message, ClientHandler sender) {
         for (ClientHandler client : clients) {
             if (client != sender) {
@@ -38,14 +37,18 @@ public class Serveur {
         }
     }
 
-    public static int getCurrentPlayerTurn() {
-        return currentPlayerTurn;
+    public static void broadcastChatMessage(String message, ClientHandler sender) {
+        System.out.println("Broadcasting chat message: " + message);
+        for (ClientHandler client : clients) {
+            if (client != sender) {
+                client.sendMessage(message);
+            }
+        }
     }
 
     public static void switchPlayerTurn() {
         currentPlayerTurn = (currentPlayerTurn == 1) ? 2 : 1;
-
-        broadcastMessage("Tour du joueur " + currentPlayerTurn, null);
+        broadcastMessage(Messages.PLAYERTURN.getMessage() + currentPlayerTurn, null);
     }
 
 }

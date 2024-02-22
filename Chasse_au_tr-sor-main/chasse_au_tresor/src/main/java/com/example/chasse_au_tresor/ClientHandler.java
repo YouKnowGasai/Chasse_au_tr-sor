@@ -5,13 +5,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
     private BufferedReader reader;
     private PrintWriter writer;
 
-    private static int currentPlayer = 1;
+    List<Results> resultsList = new ArrayList<>();
 
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
@@ -30,13 +32,16 @@ public class ClientHandler implements Runnable {
             while ((message = reader.readLine()) != null) {
                 System.out.println("Message received from client: " + message);
 
-                if (message.startsWith("Case cliquée")) {
+                if (message.startsWith(Messages.CLICK.getMessage())) {
                     // Gérer le changement de tour
                     Serveur.switchPlayerTurn();
                     Serveur.broadcastMessage(message, this);
-                } else {
-                    // Gérer les autres types de messages
-                    Serveur.broadcastMessage(message, this);
+                } else if(message.startsWith(Messages.SCORE.getMessage())) {
+                    resultsList.add(parseScore(message));
+                    Serveur.broadcastMessage(message,this);
+                } else if (message.startsWith(Messages.TCHAT.getMessage())) {
+                    System.out.println("Handling chat message");
+                    handleChatMessage(message, this);
                 }
             }
         } catch (IOException e) {
@@ -44,7 +49,21 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    public static Results parseScore(String message) {
+        String[] data = message.split(",");
+        return new Results(
+                Integer.parseInt(data[1]),
+                Integer.parseInt(data[2]),
+                Integer.parseInt(data[3])
+        );
+    }
+
     public void sendMessage(String message) {
         writer.println(message);
+    }
+
+    public void handleChatMessage(String message, ClientHandler sender) {
+        System.out.println("Handling chat message: " + message);
+        Serveur.broadcastChatMessage(message, sender);
     }
 }
